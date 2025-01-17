@@ -2,6 +2,7 @@ import axios from 'axios';
 import { GC_URL } from '../../lib/constants';
 import { sendMatchInfo } from '../../lib/discord';
 import { getAllStorageSyncData, getTranslationText } from '../../utils';
+import { tocarSomFimWarmup } from './tocarSomFimWarmup';
 
 const colors = [
   { val: 180, color: 'chartreuse' },
@@ -35,6 +36,10 @@ export const buildTimer = ( warmupFinished, targetContainer, timeleft, maxtime =
     if ( distance < 0 ) {
       clearInterval( x );
       $( '#warmup_timer' ).html( warmupFinished );
+    }
+
+    if ( timeleft <= 60 ) {
+      tocarSomFimWarmup();
     }
   }, 1000 );
   return x;
