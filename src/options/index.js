@@ -134,7 +134,7 @@ function carregarTraducao( language = 'pt' ) {
 }
 
 function popularAudioOptions() {
-  for ( const selectId of [ 'somReady', 'somKicked' ] ) {
+  for ( const selectId of [ 'somReady', 'somKicked', 'somFimWarmup' ] ) {
     const select = document.getElementById( selectId );
     for ( const index in audios ) {
       select.options[select.options.length] = new Option( audios[index], index );
@@ -332,6 +332,16 @@ function adicionarListenersSons() {
       document.getElementById( 'somKicked' ).value === 'custom' ?
         document.getElementById( 'customSomKicked' ).value :
         document.getElementById( 'somKicked' ).value;
+    const audio = new Audio( som );
+    audio.volume = document.getElementById( 'volume' ).value / 100;
+    audio.play();
+  } );
+
+  document.getElementById( 'testarSomFimWarmup' ).addEventListener( 'click', function () {
+    const som =
+      document.getElementById( 'somFimWarmup' ).value === 'custom' ?
+        document.getElementById( 'customSomFimWarmup' ).value :
+        document.getElementById( 'somFimWarmup' ).value;
     const audio = new Audio( som );
     audio.volume = document.getElementById( 'volume' ).value / 100;
     audio.play();
