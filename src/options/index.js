@@ -281,6 +281,7 @@ function selecionarSons() {
   chrome.storage.sync.get( null, response => {
     if ( !response ) { return false; }
     for ( const config of configValues ) {
+      if ( !response[config] ) { continue; }
       document.getElementById( config ).value = response[config] || '';
       if ( response[config] === 'custom' ) {
         const customObj = document.getElementById( `p-custom${config[0].toUpperCase()}${config.slice( 1 )}` );
