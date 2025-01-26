@@ -26,6 +26,7 @@ function iniciarPaginaOpcoes() {
   adicionarListenerPreVetos();
   adicionarListenerCompleteMapas();
   popularAudioOptions();
+  popularFimWarmupOptions();
   popularServerWebHookOptions();
   selecionarSons();
   atualizarValorVolume();
@@ -139,6 +140,15 @@ function popularAudioOptions() {
     for ( const index in audios ) {
       select.options[select.options.length] = new Option( audios[index], index );
     }
+  }
+}
+
+function popularFimWarmupOptions() {
+  const select = document.getElementById( 'somFimWarmupTempo' );
+  const tempoDefault = 60;
+  for ( const tempo of [ 15, 30, 45, 60 ] ) {
+    const isSelected = tempo === tempoDefault;
+    select.options[select.options.length] = new Option( tempo + ' segundos', tempo, false, isSelected );
   }
 }
 
@@ -346,6 +356,11 @@ function adicionarListenersSons() {
     const audio = new Audio( som );
     audio.volume = document.getElementById( 'volume' ).value / 100;
     audio.play();
+  } );
+
+  document.getElementById( 'somFimWarmupTempo' ).addEventListener( 'change', function () {
+    const tempo = this.value;
+    chrome.storage.sync.set( { 'somFimWarmupTempo': tempo }, function () {} );
   } );
 
   document.getElementById( 'volume' ).addEventListener( 'input', function () {

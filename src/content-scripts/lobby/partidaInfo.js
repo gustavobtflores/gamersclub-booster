@@ -38,9 +38,7 @@ export const buildTimer = ( warmupFinished, targetContainer, timeleft, maxtime =
       $( '#warmup_timer' ).html( warmupFinished );
     }
 
-    if ( distance <= 60 && timeleft > 0 ) {
-      tocarSomFimWarmup();
-    }
+    tocarSomFimWarmup( distance );
   }, 1000 );
   return x;
 };

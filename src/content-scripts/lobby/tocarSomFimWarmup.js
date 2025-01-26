@@ -1,16 +1,18 @@
 export const tocarSomFimWarmup = ( () => {
   let played = false;
 
-  return () => {
+  return distance => {
     if ( !played ) {
-      played = true;
+      chrome.storage.sync.get( [ 'somFimWarmup', 'somFimWarmupTempo', 'customSomFimWarmup', 'volume' ], function ( result ) {
+        const tempo = result.somFimWarmupTempo || 60;
+        if ( !result.somFimWarmup || distance > tempo ) { return false; }
 
-      chrome.storage.sync.get( [ 'somFimWarmup', 'customSomFimWarmup', 'volume' ], function ( result ) {
         const som = result.somFimWarmup === 'custom' ? result.customSomFimWarmup : result.somFimWarmup;
         const audio = new Audio( som );
-        const volume = result.volume || 100;
+        const volume = result.volume || 50;
         audio.volume = volume / 100;
         audio.play();
+        played = true;
       } );
     }
   };
