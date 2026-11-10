@@ -49,6 +49,7 @@ export const mostrarKdr = mutations => {
 
           $element.prepend( $kdrElement );
           $element.find( 'div.LobbyPlayer' ).append( '<style>.LobbyPlayer:before{top:15px !important;}</style>' );
+          if ( !kdr ) { preencherKdrPelaApi( $element, $kdrElement ); }
         }
       } );
   } );
@@ -137,6 +138,7 @@ export const mostrarKdrDesafios = () => {
 
             $element.prepend( $kdrElement );
             $element.find( 'div.LobbyPlayer' ).append( '<style>.LobbyPlayer:before{top:15px !important;}</style>' );
+            if ( !kdr ) { preencherKdrPelaApi( $element, $kdrElement ); }
           }
         } );
     }
@@ -165,6 +167,10 @@ function getKdrFromTitle( title ) {
   return Array.from( title.matchAll( regexp ), m => m[1] )[0];
 }
 
+// KDRs buscados nesta página. Buscas simultâneas leem o kdrCache antes de as outras gravarem;
+// gravar todos juntos evita que uma apague o resultado da outra.
+const kdrsBuscados = {};
+
 const fetchKdr = async id => {
   // Limpa o cache
   await limparCache( 'kdrCache', 20 * 60 * 1000 ); // 20 minutos
@@ -182,14 +188,38 @@ const fetchKdr = async id => {
 
   const kdr = dadosHistoryBox?.stat[0]?.value;
 
-  kdrCache[id] = {
+  kdrsBuscados[id] = {
     kdr,
     // 20min de ttl
     ttl: Date.now() + ( 20 * 60 * 1000 )
   };
-  await setStorage( 'kdrCache', kdrCache );
+  await setStorage( 'kdrCache', { ...kdrCache, ...kdrsBuscados } );
 
   return kdr;
+};
+
+// A GC tirou o KDR do title dos jogadores no lobby; sem ele, o selo é preenchido pela API.
+// As buscas passam por 5 filas para não disparar uma requisição por jogador ao mesmo tempo.
+const filasKdr = Array.from( { length: 5 }, () => Promise.resolve() );
+let proximaFilaKdr = 0;
+
+const preencherKdrPelaApi = ( $element, $kdrElement ) => {
+  // Esconde o selo vazio (ele nasce com o degradê de KDR alto) até o valor chegar.
+  $kdrElement.css( 'visibility', 'hidden' );
+
+  const playerId = $element.attr( 'href' )?.match( /\/(?:jogador|player)\/(\d+)/ )?.[1];
+  if ( !playerId ) { return; }
+
+  const fila = proximaFilaKdr++ % filasKdr.length;
+  filasKdr[fila] = filasKdr[fila].then( () => fetchKdr( playerId ) ).then( valor => {
+    const kdr = parseFloat( valor ).toFixed( 2 );
+    if ( isNaN( kdr ) ) { return; }
+
+    if ( kdr <= 2.5 ) {
+      $kdrElement.css( { 'background': '', 'background-color': levelColor[Math.round( kdr * 10 )] + 'cc' } );
+    }
+    $kdrElement.css( 'visibility', '' ).find( '#gcbooster_kdr_span' ).text( kdr ).attr( 'kdr', kdr );
+  } ).catch( error => console.error( '[GC Booster] Erro ao buscar KDR:', error ) );
 };
 
 export const mostrarKdrRanked = () => {
